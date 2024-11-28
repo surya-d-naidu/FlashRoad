@@ -6,11 +6,11 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 
 
-const authRoutes = require('./api/routes/authRoutes');
-const orderRoutes = require('./api/routes/orderRoutes');
-const userRoutes = require('./api/routes/userRoutes');
-const frontendRoutes = require('./api/routes/frontendRoutes');  
-const vendorRoutes = require('./api/routes/vendorRoutes');  
+const authRoutes = require('./routes/authRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const userRoutes = require('./routes/userRoutes');
+const frontendRoutes = require('./routes/frontendRoutes');  
+const vendorRoutes = require('./routes/vendorRoutes');  
 
 
 dotenv.config();
