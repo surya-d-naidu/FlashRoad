@@ -1,4 +1,4 @@
 .env
-/nodemodules
+/node_modules
 /server/testUserSetup.js
 /server/testProductSetup.temp.js
