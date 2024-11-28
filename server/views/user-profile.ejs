@@ -58,7 +58,7 @@
   <script>
     
     const token = localStorage.getItem('authToken');
-    if (!token) return res.render('login');
+    if (!token) window.location.href = '/login';
 
     fetch('/profile/getdata', {
       method: 'GET',
