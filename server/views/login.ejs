@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - FlashRoad</title>
+  <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+  <header>
+    <h1>Login - FlashRoad</h1>
+    <nav>
+      <a href="/">Home</a> | <a href="/register">Register</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Login to Your Account</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit">Login</button>
+    </form>
+    <p id="errorMessage" style="color: red; display: none;">Invalid credentials. Please try again.</p>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 FlashRoad. All rights reserved.</p>
+  </footer>
+
+  <script>
+    
+    function isTokenValid() {
+      const token = localStorage.getItem('authToken');
+      if (!token) return false;
+
+      
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expirationTime = payload.exp * 1000; 
+
+      
+      if (expirationTime < Date.now()) {
+        localStorage.removeItem('authToken');
+        return false;
+      }
+      return true;
+    }
+
+    
+    if (isTokenValid()) {
+      
+      window.location.href = '/';  
+    }
+
+    
+    document.getElementById('loginForm').addEventListener('submit', function (event) {
+      event.preventDefault();  
+
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),  
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.token) {
+            
+            localStorage.setItem('authToken', data.token);
+
+            
+            window.location.href = '/';  
+          } else {
+            
+            document.getElementById('errorMessage').style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('Login error:', error);
+          document.getElementById('errorMessage').style.display = 'block';  
+        });
+    });
+  </script>
+</body>
+</html>

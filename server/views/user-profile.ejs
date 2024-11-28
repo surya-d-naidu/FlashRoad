@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - FlashRoad</title>
+  <link rel="stylesheet" href="/css/userprofile.css">
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>User Profile</h1>
+    <nav>
+      <a href="/">Home</a> | <a href="/cart">Cart</a> | <a href="/logout" onclick="logout()">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Welcome, <span id="user-name"></span></h2>
+    <p>Email: <span id="user-email"></span></p>
+    <p>Phone: <span id="user-phone"></span></p>
+
+    <h3>Your Orders</h3>
+    <table id="orders-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Total</th>
+          <th>Action</th> <!-- Added Action column for Cancel button -->
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Orders will be dynamically loaded here -->
+      </tbody>
+    </table>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 FlashRoad. All rights reserved.</p>
+  </footer>
+
+  <script>
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) return res.render('login');
+
+    fetch('/profile/getdata', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,  
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.user) {
+          
+          document.getElementById('user-name').textContent = data.user.name;
+          document.getElementById('user-email').textContent = data.user.email;
+          document.getElementById('user-phone').textContent = data.user.mobileNumber;
+        }
+
+        
+        const ordersTableBody = document.querySelector('#orders-table tbody');
+        if (data.orders.length === 0) {
+          const row = document.createElement('tr');
+          row.innerHTML = '<td colspan="5">No orders placed yet.</td>';
+          ordersTableBody.appendChild(row);
+        } else {
+          data.orders.forEach(order => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${order.product.name}</td>
+              <td>${order.quantity}</td>
+              <td>₹${order.totalPrice}</td>
+              <td><button class="cancel-order-btn" data-order-id="${order._id}">Cancel Order</button></td>
+            `;
+            ordersTableBody.appendChild(row);
+          });
+
+          
+          const cancelButtons = document.querySelectorAll('.cancel-order-btn');
+          cancelButtons.forEach(button => {
+            button.addEventListener('click', cancelOrder);
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
+        const ordersTableBody = document.querySelector('#orders-table tbody');
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="5">Error loading orders.</td>';
+        ordersTableBody.appendChild(row);
+      });
+
+    
+    function cancelOrder(event) {
+      const orderId = event.target.getAttribute('data-order-id');
+      if (confirm('Are you sure you want to cancel this order?')) {
+        fetch(`/profile/cancel-order/${orderId}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`, 
+            'Content-Type': 'application/json',
+          }
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('Order cancelled successfully');
+              window.location.reload(); 
+            } else {
+              alert('Failed to cancel the order');
+            }
+          })
+          .catch(error => {
+            console.error('Error cancelling order:', error);
+            alert('An error occurred while cancelling the order');
+          });
+      }
+    }
+    function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '/login';
+    }
+  </script>
+</body>
+</html>

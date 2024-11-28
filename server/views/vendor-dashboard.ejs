@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Products</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <header>
+        <h1>Vendor Dashboard</h1>
+        <nav>
+            <a href="/home">Home</a>
+            <a href="/vendor/products">Products</a>
+            <a href="/donate">Donate</a>
+            <a href="/logout" onclick="logout()">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Add Product Form -->
+        <h2>Add a New Product</h2>
+        <form id="addProductForm">
+            <label for="name">Product Name:</label>
+            <input type="text" name="name" id="name" required><br><br>
+
+            <label for="description">Description:</label>
+            <textarea name="description" id="description" required></textarea><br><br>
+
+            <label for="price">Price:</label>
+            <input type="number" name="price" id="price" required><br><br>
+
+            <label for="stock">Stock Quantity:</label>
+            <input type="number" name="stock" id="stock" required><br><br>
+
+            <label for="image">Image URL (optional):</label>
+            <input type="text" name="image" id="image"><br><br>
+
+            <button type="submit">Add Product</button>
+        </form>
+
+        <!-- Manage Existing Products -->
+        <h2>Your Existing Products</h2>
+        <table id="productList">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Update Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Products will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 FlashRoad</p>
+    </footer>
+
+    <script>
+        
+        async function fetchProducts() {
+            const token = localStorage.getItem('authToken'); 
+
+            try {
+                const response = await fetch('/vendor/products', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch products');
+                }
+
+                const data = await response.json();
+
+                
+                const productsTableBody = document.querySelector('#productList tbody');
+                productsTableBody.innerHTML = ''; 
+
+                data.products.forEach(product => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${product.name}</td>
+                        <td>${product.description}</td>
+                        <td>$${product.price}</td>
+                        <td>${product.stock}</td>
+                        <td>
+                            <button onclick="updateStock('${product._id}')">Update Stock</button>
+                        </td>
+                    `;
+                    productsTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                alert('There was an issue fetching products.');
+            }
+        }
+
+        
+        document.getElementById('addProductForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); 
+
+            const token = localStorage.getItem('authToken'); 
+            const name = document.getElementById('name').value;
+            const description = document.getElementById('description').value;
+            const price = document.getElementById('price').value;
+            const stock = document.getElementById('stock').value;
+            const image = document.getElementById('image').value;
+
+            try {
+                const response = await fetch('/vendor/manage-products', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        price,
+                        stock,
+                        image,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add product');
+                }
+
+                
+                document.getElementById('addProductForm').reset();
+                fetchProducts(); 
+            } catch (error) {
+                console.error('Error adding product:', error);
+                alert('There was an issue adding the product.');
+            }
+        });
+
+        
+        async function updateStock(productId) {
+            const stock = prompt("Enter new stock quantity:");
+
+            if (stock === null || stock === "" || isNaN(stock) || stock < 0) {
+                alert("Invalid stock value.");
+                return;
+            }
+
+            const token = localStorage.getItem('authToken');
+
+            try {
+                const response = await fetch(`/vendor/update-stock/${productId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ stock }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update stock');
+                }
+
+                fetchProducts(); 
+            } catch (error) {
+                console.error('Error updating stock:', error);
+                alert('There was an issue updating the stock.');
+            }
+        }
+
+        
+        fetchProducts();
+
+        
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

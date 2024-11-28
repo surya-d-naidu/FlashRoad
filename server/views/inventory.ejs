@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Products - FlashRoad</title>
+  <link rel="stylesheet" href="/css/inventory.css">
+</head>
+<body>
+  <header>
+    <h1>Vendor Dashboard</h1>
+    <nav>
+      <a href="/">Home</a> | <a href="/logout" onclick="logout()">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Add a New Product</h2>
+    <form id="addProductForm">
+      <label for="name">Product Name:</label>
+      <input type="text" name="name" id="name" required><br><br>
+
+      <label for="description">Description:</label>
+      <textarea name="description" id="description" required></textarea><br><br>
+
+      <label for="price">Price:</label>
+      <input type="number" name="price" id="price" required><br><br>
+
+      <label for="stock">Stock Quantity:</label>
+      <input type="number" name="stock" id="stock" required><br><br>
+
+      <label for="image">Image URL (optional):</label>
+      <input type="text" name="image" id="image"><br><br>
+
+      <button type="submit">Add Product</button>
+    </form>
+
+    <h3>Your Products</h3>
+    <table id="products-table">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Update Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Products will be dynamically loaded here -->
+      </tbody>
+    </table>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 FlashRoad. All rights reserved.</p>
+  </footer>
+
+  <script>
+    
+    async function loadProducts() {
+      const token = localStorage.getItem('authToken');  
+
+      
+      if (!token) {
+        alert('You need to log in to manage products.');
+        window.location.href = '/login';  
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/vendor/manage-products', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,  
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        const productsTableBody = document.querySelector('#products-table tbody');
+        productsTableBody.innerHTML = '';  
+
+        if (data.products.length === 0) {
+          const row = document.createElement('tr');
+          row.innerHTML = '<td colspan="5">No products available.</td>';
+          productsTableBody.appendChild(row);
+        } else {
+          data.products.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${product.name}</td>
+              <td>${product.description}</td>
+              <td>₹${product.price}</td>
+              <td>${product.stock}</td>
+              <td><button onclick="updateStock('${product._id}')">Update Stock</button></td>
+            `;
+            productsTableBody.appendChild(row);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+        alert('Error loading products.');
+      }
+    }
+
+    
+    document.getElementById('addProductForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const name = document.getElementById('name').value;
+      const description = document.getElementById('description').value;
+      const price = document.getElementById('price').value;
+      const stock = document.getElementById('stock').value;
+      const image = document.getElementById('image').value;
+
+      const token = localStorage.getItem('authToken');  
+
+      
+      if (!token) {
+        alert('You need to log in to add products.');
+        window.location.href = '/login';  
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/vendor/manage-products', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name,
+            description,
+            price,
+            stock,
+            image
+          })
+        });
+
+        if (response.ok) {
+          loadProducts();  
+          document.getElementById('addProductForm').reset();  
+        } else {
+          throw new Error('Failed to add product');
+        }
+      } catch (error) {
+        console.error('Error adding product:', error);
+        alert('Error adding product.');
+      }
+    });
+
+    
+    async function updateStock(productId) {
+      const stock = prompt('Enter new stock quantity:');
+      if (stock !== null && !isNaN(stock) && stock >= 0) {
+        const token = localStorage.getItem('authToken');  
+
+        
+        if (!token) {
+          alert('You need to log in to update stock.');
+          window.location.href = '/login';  
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/vendor/update-stock/${productId}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ stock })
+          });
+
+          if (response.ok) {
+            loadProducts();  
+          } else {
+            throw new Error('Failed to update stock');
+          }
+        } catch (error) {
+          console.error('Error updating stock:', error);
+          alert('Error updating stock.');
+        }
+      } else {
+        alert('Invalid stock value.');
+      }
+    }
+
+    
+    loadProducts();
+  </script>
+</body>
+</html>

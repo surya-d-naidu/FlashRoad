@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donate</title>
+    <link rel="stylesheet" href="/css/donate.css">
+    <!-- Add any additional styles if necessary -->
+</head>
+<body>
+    <header>
+        <h1>FlashRoad</h1>
+    </header>
+
+    <div class="container">
+        <!-- Donation Section -->
+        <div class="donation-section">
+            <h2>Support Our Project</h2>
+            <p>FlashRoad is a student project, by donating, you're helping us to keep it running instead of leaving it as just written piece of code</p>
+
+            <!-- UPI Donation Button -->
+            <div class="upi-donation">
+                <p>Click the button below to donate via UPI (PhonePe, Google Pay, etc.)</p>
+                <a href="upi://pay?pa=flashroad@ibl&tn=DonationForFlashRoad" class="btn btn-donate" target="_blank">
+                    Donate Now
+                </a>
+            </div>
+            
+            <hr>
+
+            <!-- Donation Confirmation Form -->
+            <h3>Confirm Your Donation</h3>
+            <p>After making the payment, please enter your transaction ID here so we can acknowledge your donation.</p>
+            
+            <form id="donationForm" action="/donate/confirm" method="POST">
+                <div class="form-group">
+                    <label for="amount">Donation Amount (₹)</label>
+                    <input type="number" id="amount" name="amount" required placeholder="Enter donation amount" min="1" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionId">Transaction ID</label>
+                    <input type="text" id="transactionId" name="transactionId" required placeholder="Enter your UPI transaction ID" />
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-confirm-donation">Confirm Donation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Section (displayed after successful donation submission) -->
+    <div id="confirmationMessage" style="display: none;">
+        <h2>Thank You for Your Donation!</h2>
+        <p>Your donation has been successfully received. We appreciate your support!</p>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Your Website. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        document.querySelector('.btn-donate').addEventListener('click', function() {
+            // This will open the UPI payment link in the UPI app
+            window.location.href = this.href; // Use window.location to open the UPI app
+        });
+
+        // Handle form submission for transaction confirmation
+        document.getElementById('donationForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const amount = document.getElementById('amount').value;
+            const transactionId = document.getElementById('transactionId').value;
+
+            // Check if both fields are filled out
+            if (!amount || !transactionId) {
+                alert('Please fill out both fields.');
+                return;
+            }
+
+            const token = localStorage.getItem('authToken'); // Assuming the token is stored in local storage
+
+            if (!token) {
+                alert('You need to be logged in to make a donation.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/donate/confirm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ amount, transactionId })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('donationForm').style.display = 'none';
+                    document.getElementById('confirmationMessage').style.display = 'block';
+                } else {
+                    alert(result.error || 'An error occurred while processing your donation.');
+                }
+            } catch (error) {
+                alert('There was a problem submitting the donation. Please try again later.');
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

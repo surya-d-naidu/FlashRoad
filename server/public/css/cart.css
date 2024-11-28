@@ -1,0 +1,187 @@
+/* General Styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+  }
+  
+  header {
+    background-color: #333;
+    color: white;
+    padding: 1rem 0;
+    text-align: center;
+  }
+  
+  header h1 {
+    margin-bottom: 0.5rem;
+  }
+  
+  nav {
+    margin-top: 0.5rem;
+  }
+  
+  nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+  }
+  
+  nav a:hover {
+    text-decoration: underline;
+  }
+  
+  footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem 0;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+  }
+  
+  /* Main Cart Section */
+  .cart {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  #empty-cart-message {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #888;
+  }
+  
+  #cart-items-table {
+    display: block;
+  }
+  
+  #cart-items-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  #cart-items-table th, #cart-items-table td {
+    text-align: left;
+    padding: 10px;
+    border: 1px solid #ddd;
+  }
+  
+  #cart-items-table th {
+    background-color: #f4f4f4;
+  }
+  
+  #cart-items-table td input {
+    width: 60px;
+    padding: 5px;
+    text-align: center;
+  }
+  
+  #cart-items-table td button {
+    padding: 5px 10px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  #cart-items-table td button:hover {
+    background-color: #d32f2f;
+  }
+  
+  .cart-total {
+    margin-top: 20px;
+    text-align: right;
+  }
+  
+  .cart-total p {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .cart-total button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .cart-total button:disabled {
+    background-color: #bbb;
+  }
+  
+  .cart-total button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    header h1 {
+      font-size: 1.5rem;
+    }
+  
+    nav a {
+      margin: 0 10px;
+      font-size: 1rem;
+    }
+  
+    #cart-items-table table {
+      font-size: 0.9rem;
+    }
+  
+    .cart-total p {
+      font-size: 1rem;
+    }
+  
+    .cart-total button {
+      padding: 8px 16px;
+      font-size: 1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    header h1 {
+      font-size: 1.2rem;
+    }
+  
+    nav a {
+      margin: 0 5px;
+      font-size: 0.9rem;
+    }
+  
+    #cart-items-table table {
+      font-size: 0.8rem;
+    }
+  
+    #cart-items-table td input {
+      width: 50px;
+      padding: 4px;
+    }
+  
+    #cart-items-table td button {
+      padding: 4px 8px;
+    }
+  
+    .cart-total p {
+      font-size: 0.9rem;
+    }
+  
+    .cart-total button {
+      padding: 6px 12px;
+      font-size: 0.9rem;
+    }
+  
+    footer {
+      position: relative;
+      margin-top: 40px;
+    }
+  }
+  

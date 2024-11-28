@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= product.name %> - FlashRoad</title>
+  <link rel="stylesheet" href="/css/productDetail.css">
+</head>
+<body>
+  <header>
+    <h1>FlashRoad - Product Details</h1>
+    <nav>
+      <a href="/">Home</a> | <a href="/cart">Cart</a> | <a href="/profile">Profile</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="product-detail">
+      <img src="<%= product.image %>" alt="<%= product.name %>">
+      <div class="details">
+        <h3><%= product.name %></h3>
+        <p><%= product.description %></p>
+        <p><strong>Price: </strong>₹<%= product.price.toFixed(2) %></p>
+        <p><strong>Stock: </strong><%= product.stock %> items available</p>
+        <button id="add-to-cart-btn">Add to Cart</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 FlashRoad. All rights reserved.</p>
+  </footer>
+
+  <script>
+    
+    document.getElementById('add-to-cart-btn').addEventListener('click', function() {
+      const product = {
+        id: "<%= product.id %>",
+        name: "<%= product.name %>",
+        price: <%= product.price %>,
+        image: "<%= product.image %>",
+        quantity: 1 
+      };
+
+      
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+      
+      const existingProductIndex = cart.findIndex(item => item.id === product.id);
+      
+      if (existingProductIndex !== -1) {
+        
+        cart[existingProductIndex].quantity += 1;
+      } else {
+        
+        cart.push(product);
+      }
+
+      
+      localStorage.setItem('cart', JSON.stringify(cart));
+
+      
+      alert('Product added to cart!');
+    });
+  </script>
+</body>
+</html>
