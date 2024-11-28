@@ -1,6 +1,6 @@
 const express = require('express');
-const { getUserProfile, updateUserProfile, changePassword } = require('../controllers/userController');
-const authMiddleware = require('../middleware/authMiddleware');
+const { getUserProfile, updateUserProfile, changePassword } = require('../../controllers/userController');
+const authMiddleware = require('../../middleware/authMiddleware');
 const router = express.Router();
 
 

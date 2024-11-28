@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const Order = require('../models/Order');
+const Order = require('../../models/Order');
 
 
-const User = require('../models/User');
-const Product = require('../models/Product');
+const User = require('../../models/User');
+const Product = require('../../models/Product');
 const jwt = require('jsonwebtoken');
 
 

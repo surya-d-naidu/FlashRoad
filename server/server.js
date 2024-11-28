@@ -6,11 +6,11 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 
 
-const authRoutes = require('./routes/authRoutes');
-const orderRoutes = require('./routes/orderRoutes');
-const userRoutes = require('./routes/userRoutes');
-const frontendRoutes = require('./routes/frontendRoutes');  
-const vendorRoutes = require('./routes/vendorRoutes');  
+const authRoutes = require('./api/routes/authRoutes');
+const orderRoutes = require('./api/routes/orderRoutes');
+const userRoutes = require('./api/routes/userRoutes');
+const frontendRoutes = require('./api/routes/frontendRoutes');  
+const vendorRoutes = require('./api/routes/vendorRoutes');  
 
 
 dotenv.config();
@@ -44,7 +44,7 @@ app.use('/', frontendRoutes);
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('MongoDB connected');
-    app.listen(process.env.PORT || 5000, () => {
+    app.listen(process.env.PORT || 8080, () => {
       console.log('Server running on port 5000');
     });
   })
