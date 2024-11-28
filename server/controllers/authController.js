@@ -10,12 +10,6 @@ exports.register = async (req, res) => {
     const { name, email, password, mobileNumber, role } = req.body;
 
     
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+student\.ac\.in$/;;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Server is unreachable' });
-    }
-
-    
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: 'User already exists' });
 
