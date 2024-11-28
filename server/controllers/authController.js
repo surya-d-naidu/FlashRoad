@@ -32,7 +32,7 @@ exports.register = async (req, res) => {
     await newUser.save();
 
     
-    const verificationUrl = `${process.env.BASE_URL}/api/auth/verify-email/${emailVerificationToken}`;
+    const verificationUrl = `flashroad.vercel.app/api/auth/verify-email/${emailVerificationToken}`;
     const mailContent = `Please verify your email by clicking the following link: ${verificationUrl}`;
     sendEmail(email, 'Verify Your Email', mailContent);
 
