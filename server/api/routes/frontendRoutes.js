@@ -341,6 +341,10 @@ router.use((req, res) => {
   res.status(404).render('404');  
 });
 
+router.use((req, res) => {
+  res.status(400).render('400'); 
+});
+
 router.post('/donate/confirm', async (req, res) => {
   const { amount, transactionId } = req.body;
   const token = req.headers.authorization?.split(' ')[1]; 
