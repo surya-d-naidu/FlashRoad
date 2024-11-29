@@ -1,5 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const User = require('../models/User');
+const sendEmail = require('../services/emailService');
 
 exports.createOrder = async (req, res) => {
     try {
@@ -37,6 +39,8 @@ exports.createOrder = async (req, res) => {
   
         
         await newOrder.save();
+        const user = await User.findById(userId);
+        await sendEmail(product.vendor.email, `New Order notification`, `You have received a new order of ${product.name} from ${user.mobileNumber}`)
       }
   
       

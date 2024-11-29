@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
 
     
     const verificationUrl = `flashroad.vercel.app/api/auth/verify-email/${emailVerificationToken}`;
-    const mailContent = `Here is where you should do : ${verificationUrl}`;
+    const mailContent = `Here is the link to verify your email on FlashRoad : ${verificationUrl}`;
     await sendEmail(email, 'Verify Your Email', mailContent);
 
     res.status(201).json({ message: 'User registered successfully, please check your email for verification.' });
