@@ -36,7 +36,7 @@
         </table>
 
         <div class="cart-total">
-          <p><strong>Total Price:</strong> $<span id="total-price">0.00</span></p>
+          <p><strong>Total Price:</strong> ₹<span id="total-price">0.00</span></p>
           <button id="checkout-btn" class="btn" disabled>Proceed to Checkout</button>
         </div>
       </div>
@@ -48,7 +48,6 @@
   </footer>
 
   <script>
-    
     function loadCart() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const cartItemsContainer = document.getElementById('cart-items');
@@ -71,11 +70,11 @@
           const row = document.createElement('tr');
           row.innerHTML = ` 
             <td>${item.name}</td>
-            <td>$${item.price.toFixed(2)}</td>
+            <td>₹${item.price.toFixed(2)}</td>
             <td>
               <input type="number" value="${item.quantity}" min="1" onchange="updateQuantity(${index}, this.value)">
             </td>
-            <td>$${(item.price * item.quantity).toFixed(2)}</td>
+            <td>₹${(item.price * item.quantity).toFixed(2)}</td>
             <td><button onclick="removeFromCart(${index})">Remove</button></td>
           `;
           cartItemsContainer.appendChild(row);
@@ -86,7 +85,6 @@
       }
     }
   
-    
     function removeFromCart(index) {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       cart.splice(index, 1);
@@ -94,79 +92,69 @@
       loadCart();
     }
   
-    
     function updateQuantity(index, quantity) {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       cart[index].quantity = parseInt(quantity, 10);
       localStorage.setItem('cart', JSON.stringify(cart));
       loadCart();
     }
-  
-    
-    
-function placeOrder() {
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  
-  if (cart.length === 0) {
-    alert('Your cart is empty!');
-    return;
-  }
 
+    function placeOrder(userID) {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
   
-  const token = localStorage.getItem('authToken');
-  
-  if (!token) {
-    alert('You must be logged in to place an order!');
-    return;
-  }
+      if (cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+      }
 
-  
-  fetch('/api/orders/create', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,  
-    },
-    body: JSON.stringify({
-      cart: cart.map(item => ({
-        productId: item.id,  
-        quantity: item.quantity,
-        price: item.price
-      })),
-      totalPrice: calculateTotalPrice(cart)
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.message === 'Order created successfully') {
-      alert('Your order has been placed successfully!');
-      localStorage.removeItem('cart');
-      window.location.href = '/';
-    } else {
-      alert('There was an issue placing your order. Please try again.');
+      fetch('/api/orders/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cart: cart.map(item => ({
+            productId: item.id,
+            quantity: item.quantity,
+            price: item.price
+          })),
+          totalPrice: calculateTotalPrice(cart),
+          userID: userID
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message === 'Order created successfully') {
+          alert('Your order has been placed successfully!');
+          localStorage.removeItem('cart');
+          window.location.href = '/';
+        } else {
+          alert('There was an issue placing your order. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error placing the order:', error);
+        alert('An error occurred. Please try again.');
+      });
     }
-  })
-  .catch(error => {
-    console.error('Error placing the order:', error);
-    alert('An error occurred. Please try again.');
-  });
-}
-
   
-    
     function calculateTotalPrice(cart) {
       return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
     }
   
-    
     document.getElementById('checkout-btn').addEventListener('click', () => {
-      const confirmOrder = confirm("Do you want to place the order?");
-      if (confirmOrder) {
-        placeOrder();
+      const userMobile = prompt("Please enter your mobile number to proceed with the order:");
+      
+      if (userMobile) {
+        const confirmOrder = confirm("Do you want to place the order?");
+        if (confirmOrder) {
+          placeOrder(userMobile);
+        }
+      } else {
+        alert("Mobile number is required to place the order.");
       }
     });
 
-    
     window.onload = function() {
       loadCart();
     };

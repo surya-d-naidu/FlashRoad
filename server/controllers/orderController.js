@@ -4,53 +4,70 @@ const User = require('../models/User');
 const sendEmail = require('../services/emailService');
 
 exports.createOrder = async (req, res) => {
-    try {
-      const { cart, totalPrice } = req.body; 
-      const userId = req.user.id; 
-  
-      
-      for (const item of cart) {
-        const { productId, quantity, price } = item;
-  
-        
-        const product = await Product.findById(productId);
-        if (!product) {
-          return res.status(404).json({ message: 'Product not found' });
-        }
-  
-        
-        if (product.stock < quantity) {
-          return res.status(400).json({ message: 'Not enough stock available' });
-        }
-  
-        
-        const newOrder = new Order({
-          product: productId,
-          customer: userId,
-          vendor: product.vendor, 
-          quantity,
-          totalPrice: price * quantity, 
-          status: 'pending', 
-        });
-  
-        
-        product.stock -= quantity;
-        await product.save();
-  
-        
-        await newOrder.save();
-        const user = await User.findById(userId);
-        const vendor = await User.findById(product.vendor);
-        await sendEmail(vendor.email, `New Order notification`, `You have received a new order of ${product.name} from ${user.mobileNumber}`);
-      }
-  
-      
-      res.status(201).json({ message: 'Order created successfully' });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error', error });
+  try {
+    const { cart, totalPrice, userID } = req.body; 
+
+    
+    if (!userID || userID.length === 0) {
+      return res.status(400).json({ message: 'Mobile number (userID) is required' });
     }
-  };
+
+    
+    if (!cart || cart.length === 0) {
+      return res.status(400).json({ message: 'Cart cannot be empty' });
+    }
+
+    let totalOrderPrice = 0; 
+
+    
+    for (const item of cart) {
+      const { productId, quantity, price } = item;
+
+      
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      
+      if (product.stock < quantity) {
+        return res.status(400).json({ message: 'Not enough stock available' });
+      }
+
+      
+      const newOrder = new Order({
+        product: productId,
+        customer: userID, 
+        vendor: product.vendor,
+        quantity,
+        totalPrice: price * quantity, 
+        status: 'pending', 
+      });
+
+      
+      product.stock -= quantity;
+      await product.save();
+
+      
+      await newOrder.save();
+
+      
+      const vendor = await User.findById(product.vendor);
+      if (vendor && vendor.email) {
+        await sendEmail(vendor.email, `New Order notification`, `You have received a new order of ${product.name} from ${userID}`);
+      }
+
+      
+      totalOrderPrice += price * quantity;
+    }
+
+    
+    res.status(201).json({ message: 'Order created successfully', totalPrice: totalOrderPrice });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
 
 
 exports.getOrdersForUser = async (req, res) => {
