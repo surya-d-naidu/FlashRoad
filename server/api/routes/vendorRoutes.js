@@ -1,7 +1,24 @@
 const express = require('express');
 const Product = require('../../models/Product');
-const authMiddleware = require('../../middleware/authMiddleware'); 
+const authMiddleware = require('../../middleware/authMiddleware');
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');  
 const router = express.Router();
+
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'server/uploads/'); 
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); 
+  }
+});
+
+const upload = multer({ storage: storage });
+
 
 router.get('/inventory', (req, res) => {
   res.render('inventory');
@@ -10,7 +27,7 @@ router.get('/inventory', (req, res) => {
 
 router.get('/manage-products', authMiddleware, async (req, res) => {
   try {
-    const vendorId = req.user.id; 
+    const vendorId = req.user.id;
     const products = await Product.find({ vendor: vendorId });
     res.json({ products });
   } catch (error) {
@@ -20,17 +37,37 @@ router.get('/manage-products', authMiddleware, async (req, res) => {
 });
 
 
-router.post('/manage-products', authMiddleware, async (req, res) => {
+router.post('/manage-products', authMiddleware, upload.single('image'), async (req, res) => {
   try {
-    const { name, description, price, stock, image } = req.body;
+    const { name, description, price, stock } = req.body;
+
+    let imageUrl = '';
+
+    
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'products', 
+        width: 800,  
+        height: 800,
+        crop: 'scale'
+      });
+      imageUrl = result.secure_url;  
+
+      
+      fs.unlinkSync(req.file.path);  
+      console.log(`Deleted local file: ${req.file.path}`);
+    }
+
+    
     const product = new Product({
       name,
       description,
       price,
       stock,
-      image,
-      vendor: req.user.id, 
+      image: imageUrl,  
+      vendor: req.user.id,
     });
+
     await product.save();
     res.status(201).json({ message: 'Product added successfully', product });
   } catch (error) {

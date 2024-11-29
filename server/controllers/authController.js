@@ -9,7 +9,6 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password, mobileNumber, role } = req.body;
 
-    const userRole = role.toLowerCase();
     const userExists = await User.findOne({ email });
     if (userExists){  
       return res.status('400').json({ message: 'User already exists' }
@@ -27,15 +26,21 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
       mobileNumber,
-      userRole,
-      emailVerificationToken,
+      emailVerificationToken: emailVerificationToken,
     });
 
     await newUser.save();
 
     
     const verificationUrl = `flashroad.vercel.app/api/auth/verify-email/${emailVerificationToken}`;
-    const mailContent = `Here is the link to verify your email on FlashRoad : ${verificationUrl}`;
+    const mailContent = `Here is the link to verify your email on FlashRoad : ${verificationUrl}
+    
+    This is the guide for all your controls of vendor account.
+    flashroad.vercel.app/api/vendor/inventory : Your place to manage your inventory(stock)
+    
+    Also remember your password, we didnt introduce the password reset feature because of security reasons
+    
+    Incase if you forget, just mail me. I'll help you reset it`;
     await sendEmail(email, 'Verify Your Email', mailContent);
 
     res.status(201).json({ message: 'User registered successfully, please check your email for verification.' });

@@ -197,4 +197,11 @@
       margin-top: 40px;
     }
   }
+  #successMessage {
+    display: none;
+    color: green;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  
   

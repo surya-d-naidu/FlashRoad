@@ -29,6 +29,7 @@ function filterProducts() {
         <h3>${product.name}</h3>
         <p>${product.description}</p>
         <p><strong>Price: </strong>₹${product.price.toFixed(2)}</p>
+        <p><strong>Stock: </strong>${product.price}</p>
         <a href="/product/${product._id}">View Details</a>
       `;
       

@@ -16,7 +16,7 @@
 
   <main>
     <h2>Add a New Product</h2>
-    <form id="addProductForm">
+    <form id="addProductForm" enctype="multipart/form-data">
       <label for="name">Product Name:</label>
       <input type="text" name="name" id="name" required><br><br>
 
@@ -29,10 +29,11 @@
       <label for="stock">Stock Quantity:</label>
       <input type="number" name="stock" id="stock" required><br><br>
 
-      <label for="image">Image URL (optional):</label>
-      <input type="text" name="image" id="image"><br><br>
+      <label for="image">Product Image:</label>
+      <input type="file" name="image" id="image" accept="image/*" required><br><br>
 
       <button type="submit">Add Product</button>
+      <div id="successMessage" style="display:none; color: green;"></div>
     </form>
 
     <h3>Your Products</h3>
@@ -50,18 +51,77 @@
         <!-- Products will be dynamically loaded here -->
       </tbody>
     </table>
+    <div id="sales-summary">
+      <h3>Total Sales: ₹<span id="total-sales">0</span></h3>
+      <h3>Sales Per Product</h3>
+      <table id="sales-per-product">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Sales</th>
+            <th>Quantity Sold</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Sales per product will be dynamically loaded here -->
+        </tbody>
+      </table>
+    </div>
   </main>
 
-  <footer>
-    <p>&copy; 2024 FlashRoad. All rights reserved.</p>
-  </footer>
-
   <script>
+    async function loadDashboard() {
+  const token = localStorage.getItem('authToken');  
+
+  if (!token) {
+    alert('You need to log in to view the dashboard.');
+    window.location.href = '/login';  
+    return;
+  }
+
+  try {
+    const response = await fetch('/vendor-dashboard-api', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
     
+    if (response.ok) {
+      // Display total sales
+      document.getElementById('total-sales').textContent = data.totalSales;
+
+      // Display sales per product
+      const salesPerProductTableBody = document.querySelector('#sales-per-product tbody');
+      salesPerProductTableBody.innerHTML = '';  // Clear any previous data
+
+      for (const productId in data.salesPerProduct) {
+        const productData = data.salesPerProduct[productId];
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${productData.product.name}</td>
+          <td>₹${productData.sales}</td>
+          <td>${productData.quantity}</td>
+        `;
+        salesPerProductTableBody.appendChild(row);
+      }
+    } else {
+      throw new Error(data.message || 'Failed to load dashboard data');
+    }
+  } catch (error) {
+    console.error('Error loading vendor dashboard:', error);
+    alert('Error loading vendor dashboard.');
+  }
+}
+
+loadDashboard();
+
     async function loadProducts() {
       const token = localStorage.getItem('authToken');  
 
-      
       if (!token) {
         alert('You need to log in to manage products.');
         window.location.href = '/login';  
@@ -106,49 +166,51 @@
 
     
     document.getElementById('addProductForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
-      const name = document.getElementById('name').value;
-      const description = document.getElementById('description').value;
-      const price = document.getElementById('price').value;
-      const stock = document.getElementById('stock').value;
-      const image = document.getElementById('image').value;
+  event.preventDefault();
 
-      const token = localStorage.getItem('authToken');  
+  const formData = new FormData();
+  formData.append('name', document.getElementById('name').value);
+  formData.append('description', document.getElementById('description').value);
+  formData.append('price', document.getElementById('price').value);
+  formData.append('stock', document.getElementById('stock').value);
+  formData.append('image', document.getElementById('image').files[0]);
 
-      
-      if (!token) {
-        alert('You need to log in to add products.');
-        window.location.href = '/login';  
-        return;
-      }
+  const token = localStorage.getItem('authToken');  
 
-      try {
-        const response = await fetch('/api/vendor/manage-products', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            name,
-            description,
-            price,
-            stock,
-            image
-          })
-        });
+  if (!token) {
+    alert('You need to log in to add products.');
+    window.location.href = '/login';  
+    return;
+  }
 
-        if (response.ok) {
-          loadProducts();  
-          document.getElementById('addProductForm').reset();  
-        } else {
-          throw new Error('Failed to add product');
-        }
-      } catch (error) {
-        console.error('Error adding product:', error);
-        alert('Error adding product.');
-      }
+  try {
+    const response = await fetch('/api/vendor/manage-products', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData
     });
+
+    const data = await response.json(); 
+
+    if (response.ok) {
+      
+      const successMessage = document.getElementById('successMessage');
+      successMessage.style.display = 'block';  
+      successMessage.textContent = data.message;  
+
+      loadProducts();  
+      document.getElementById('addProductForm').reset();  
+    } else {
+      throw new Error('Failed to add product');
+    }
+  } catch (error) {
+    console.error('Error adding product:', error);
+    alert('Error adding product.');
+  }
+});
+
 
     
     async function updateStock(productId) {
@@ -156,7 +218,6 @@
       if (stock !== null && !isNaN(stock) && stock >= 0) {
         const token = localStorage.getItem('authToken');  
 
-        
         if (!token) {
           alert('You need to log in to update stock.');
           window.location.href = '/login';  
@@ -187,7 +248,6 @@
       }
     }
 
-    
     loadProducts();
   </script>
 </body>

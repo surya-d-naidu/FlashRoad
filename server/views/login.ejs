@@ -27,7 +27,7 @@
       </div>
       <button type="submit">Login</button>
     </form>
-    <p id="errorMessage" style="color: red; display: none;">Invalid credentials. Please try again.</p>
+    <p id="errorMessage" style="color: red; display: none;">Invalid credentials. Or unverified email, check your spambox. Please try again.</p>
   </main>
 
   <footer>
@@ -59,39 +59,41 @@
     }
 
     
-    document.getElementById('loginForm').addEventListener('submit', function (event) {
-      event.preventDefault();  
+  document.getElementById('loginForm').addEventListener('submit', function (event) {
+  event.preventDefault();  
 
+  
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  
+  fetch('/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),  
+  })
+  .then(response => response.json())  
+  .then(data => {
+    
+    if (data.token) {
+      localStorage.setItem('authToken', data.token);  
+      window.location.href = '/';  
+    } else {
       
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      
-      fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),  
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.token) {
-            
-            localStorage.setItem('authToken', data.token);
-
-            
-            window.location.href = '/';  
-          } else {
-            
-            document.getElementById('errorMessage').style.display = 'block';
-          }
-        })
-        .catch(error => {
-          console.error('Login error:', error);
-          document.getElementById('errorMessage').style.display = 'block';  
-        });
-    });
+      const errorMessageElement = document.getElementById('errorMessage');
+      errorMessageElement.style.display = 'block';  
+      errorMessageElement.textContent = data.message || 'An unknown error occurred. Please try again.';  
+    }
+  })
+  .catch(error => {
+    console.error('Login error:', error);
+    const errorMessageElement = document.getElementById('errorMessage');
+    errorMessageElement.style.display = 'block';  
+    errorMessageElement.textContent = 'An error occurred. Please try again later.';  
+  });
+});
   </script>
 </body>
 </html>
