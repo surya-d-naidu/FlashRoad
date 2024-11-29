@@ -6,27 +6,28 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 465,
+  secure: true,  
   auth: {
-    user: process.env.EMAIL_USER,  // Email address from environment variables
-    pass: process.env.EMAIL_PASS,  // App-specific password or email password
+    user: process.env.EMAIL_USER,  
+    pass: process.env.EMAIL_PASS,  
   },
 });
 
 const sendEmail = async (to, subject, text) => {
   const mailOptions = {
-    from: process.env.EMAIL_USER,  // Sender email address
-    to,                            // Recipient email address
-    subject,                       // Subject of the email
-    text,                          // Plain text email content
-    html: `<p>${text}</p>`,        // Optional: If you want HTML email, use HTML content
+    from: process.env.EMAIL_USER,  
+    to,                            
+    subject,                       
+    text,                          
+    html: `<p>${text}</p>`,        
   };
 
   try {
-    // Verify the connection configuration
+    
     await new Promise((resolve, reject) => {
       transporter.verify((error, success) => {
         if (error) {
-          console.error('Error verifying connection:', error);
+          console.error('Error verifying connection:', error);  
           reject(error);
         } else {
           console.log('SMTP server is ready to take messages');
@@ -35,11 +36,11 @@ const sendEmail = async (to, subject, text) => {
       });
     });
 
-    // Send the email
+    
     const info = await new Promise((resolve, reject) => {
       transporter.sendMail(mailOptions, (err, info) => {
         if (err) {
-          console.error('Error sending email:', err);
+          console.error('Error sending email:', err);  
           reject(err);
         } else {
           console.log('Email sent successfully:', info.response);
@@ -48,10 +49,10 @@ const sendEmail = async (to, subject, text) => {
       });
     });
 
-    return info;  // Return the information about the sent email
+    return info;  
   } catch (error) {
-    console.error('Error during email sending process:', error);
-    throw error;  // Rethrow the error for further handling
+    console.error('Error during email sending process:', error.message || error);  
+    throw new Error(error.message || 'Unknown error during email sending');
   }
 };
 
