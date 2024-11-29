@@ -40,7 +40,8 @@ exports.createOrder = async (req, res) => {
         
         await newOrder.save();
         const user = await User.findById(userId);
-        await sendEmail(product.vendor.email, `New Order notification`, `You have received a new order of ${product.name} from ${user.mobileNumber}`)
+        const vendor = await User.findById(product.vendor);
+        await sendEmail(vendor.email, `New Order notification`, `You have received a new order of ${product.name} from ${user.mobileNumber}`);
       }
   
       
