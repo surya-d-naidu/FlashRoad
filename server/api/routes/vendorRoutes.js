@@ -40,22 +40,26 @@ router.get('/manage-products', authMiddleware, async (req, res) => {
 router.post('/manage-products', authMiddleware, upload.single('image'), async (req, res) => {
   try {
     const { name, description, price, stock } = req.body;
-
     let imageUrl = '';
 
-    
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'products', 
+      
+      const result = await cloudinary.uploader.upload_stream({
+        folder: 'products',  
         width: 800,  
         height: 800,
-        crop: 'scale'
+        crop: 'scale',
+      }, (error, result) => {
+        if (error) {
+          return res.status(500).json({ message: 'Error uploading image to Cloudinary' });
+        }
+        imageUrl = result.secure_url;  
       });
-      imageUrl = result.secure_url;  
 
       
-      fs.unlinkSync(req.file.path);  
-      console.log(`Deleted local file: ${req.file.path}`);
+      const bufferStream = new require('stream').PassThrough();
+      bufferStream.end(req.file.buffer);  
+      bufferStream.pipe(result);
     }
 
     
