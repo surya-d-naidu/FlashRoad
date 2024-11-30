@@ -6,6 +6,7 @@ const Order = require('../../models/Order');
 const User = require('../../models/User');
 const Product = require('../../models/Product');
 const jwt = require('jsonwebtoken');
+const inject = require("@vercel/analytics") 
 
 
 router.get('/', async (req, res) => {
